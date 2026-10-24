@@ -4,7 +4,7 @@ import pandas as pd
 from src.shipment_prep import print_stats
 from src.shipment_prep import FEATURES
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
@@ -157,12 +157,12 @@ conslidated_df = pd.DataFrame()
 #baseline mean
 conslidated_df = pd.concat([conslidated_df, baseline_metrics_df], ignore_index=True)
 #LinearRegression
-pipeline = Pipeline([
+pipeline_lr = Pipeline([
     ("scaler", StandardScaler()), 
     ("model", LinearRegression())
     ])
-pipeline.fit(X_train_scaled, y_train)
-y_pred_val = pipeline.predict(X_val_scaled)
+pipeline_lr.fit(X_train_scaled, y_train)
+y_pred_val = pipeline_lr.predict(X_val_scaled)
 result_df = get_metrics("linear_regression", "val", y_val, y_pred_val)
 conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
 #DecisionTreeRegressor
@@ -178,9 +178,9 @@ y_pred_val = model.predict(X_val_scaled)
 result_df = get_metrics("random_forest", "val", y_val, y_pred_val)
 conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
 #GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42)
-model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42)
-model.fit(X_train_scaled, y_train)
-y_pred_val = model.predict(X_val_scaled)
+model_gbr = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42)
+model_gbr.fit(X_train_scaled, y_train)
+y_pred_val = model_gbr.predict(X_val_scaled)
 result_df = get_metrics("gradient_boosting", "val", y_val, y_pred_val)
 conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
 
@@ -227,8 +227,54 @@ print("outputs/part_b_gb_learning_rate.csv generated successfully...")
 # The final model is the candidate with the lowest validation RMSE; score it once on the test rows 
 # (already fitted on the training rows) and add the row model = <its name>, split = test to part_b_metrics.csv
 
+# Ranking based on rmse_val score the top two models are as given below
+#model,             split,  MAE,    MSE,    RMSE,   R2
+#linear_regression, val,    3.9222, 23.9235,4.8912, 0.9313
+#gradient_boosting, val,    3.9152, 24.1686,4.9162, 0.9306
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+#1,020 training-plus-validation rows
+X_train_val = np.concat((X_train_scaled, X_val_scaled))
+y_train_val = pd.concat([y_train, y_val], ignore_index=True)
+#print("Len: ", len(X_train_val))
+cv_df = pd.DataFrame()
+#LinearRegression
+cv_score = cross_val_score(
+    LinearRegression(),
+    X_train_val, y_train_val, cv=kf
+)
+cv_data = {
+    "model": "linear_regression",
+    "mean_r2": round(cv_score.mean(), 4),
+    "std_r2": round(cv_score.std(), 4) 
+}
+tmp_df = pd.DataFrame([cv_data])
+cv_df = pd.concat([cv_df, tmp_df], ignore_index=True)
+#GradientBoostingRegressor
+cv_score = cross_val_score(
+    GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42),
+    X_train_val, y_train_val, cv=kf
+)
+cv_data = {
+    "model": "gradient_boosting",
+    "mean_r2": round(cv_score.mean(), 4),
+    "std_r2": round(cv_score.std(), 4) 
+}
+tmp_df = pd.DataFrame([cv_data])
+cv_df = pd.concat([cv_df, tmp_df], ignore_index=True)
+#print(cv_df)
+cv_df.to_csv("outputs/part_b_cv.csv", index=False)
+print("outputs/part_b_cv.csv generated successfully...")
 
-
+# The final model is the candidate with the lowest validation RMSE; score it once on the test rows 
+# (already fitted on the training rows) and add the row model = <its name>, split = test to part_b_metrics.csv
+#Top Model: LinearRegression on test dataset
+y_pred_test = pipeline_lr.predict(X_test_scaled)
+result_df = get_metrics("linear_regression", "test", y_test, y_pred_test)
+conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
+#Second Model: Gradient boosting on test dataset
+y_pred_test = model_gbr.predict(X_test_scaled)
+result_df = get_metrics("gradient_boosting", "test", y_test, y_pred_test)
+conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
 #print(conslidated_df)
 conslidated_df.to_csv("outputs/part_b_metrics.csv", index=False)
 print("outputs/part_b_metrics.csv generated successfully...")
