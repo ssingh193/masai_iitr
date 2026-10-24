@@ -36,6 +36,7 @@ def clean_shipments(raw, medians=None):
     print("Initial count: ", len(raw))
     print("duplicate records: ", raw.duplicated().sum())
     #2.i Remove Duplicate Rows
+    clean_df = raw
     if (raw.duplicated().sum() > 0):
         clean_df = raw.drop_duplicates()
         print("Dropped duplicates, count: ", len(clean_df))

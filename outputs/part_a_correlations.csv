@@ -1,0 +1,13 @@
+Correlation,Value
+"corr(delivery_hours, promised_hours)",0.8372
+"corr(delivery_hours, distance_km)",0.4013
+"corr(is_delayed, distance_km)",0.5455
+"corr(delivery_hours, parcel_weight_kg)",0.0234
+"corr(is_delayed, parcel_weight_kg)",-0.017
+"corr(is_delayed, is_weekend)",0.0952
+"corr(is_delayed, dispatch_hour)",0.0401
+"corr(delivery_hours, dispatch_hour)",0.03
+"corr(is_delayed, rain_flag)",0.2447
+"corr(delivery_hours, rain_flag)",0.1437
+"corr(delivery_hours, is_delayed)",0.1391
+"corr(delivery_hours, is_weekend)",0.1038
