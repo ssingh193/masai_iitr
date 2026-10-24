@@ -1,6 +1,8 @@
------------------
+###########################################################
+Part A — Data Foundation and Delay Evidence
+###########################################################
 "Data findings"
------------------
+----------------
 (i) which service type is delayed most often and at what rate
 Express service type is delayed most often and its delay rate is 0.4897
 
@@ -22,3 +24,8 @@ declared_value_mean_inr,1533.0542
 log_declared_value_mean,7.0277
 declared_value_median_inr,1121.5
 log_declared_value_median,7.0224
+
+
+###########################################################
+Part B — Delivery-Hours Regression
+###########################################################

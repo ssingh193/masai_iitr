@@ -25,8 +25,8 @@ df_raw_shipments = pd.read_csv('data/raw_shipments.csv')
 #print("********************************\n")
 
 #call clean_shipment to clean up raw data
-result = clean_shipments(df_raw_shipments)
-clean_df = build_features(result.get("clean_df"), df_hubs)
+clean_df, median_values = clean_shipments(df_raw_shipments)
+clean_df = build_features(clean_df, df_hubs)
 
 #add the target is_delayed (1 when delivery_hours > promised_hours, else 0); 
 clean_df["is_delayed"] = np.where((clean_df["delivery_hours"] > clean_df["promised_hours"]), 1, 0)
@@ -203,6 +203,6 @@ print("outputs/part_a_correlations.csv generated successfully...")
 ############################################################
 ## TESTING
 ############################################################
-#result2 = clean_shipments(df_new_shipments, result.get("median_values"))
-#clean_df2 = build_features(result2.get("clean_df"), df_hubs)
-#print_stats(clean_df)
+#clean_df2, mean_val = clean_shipments(df_new_shipments, median_values)
+#clean_df2 = build_features(clean_df2, df_hubs)
+#print_stats(clean_df2)

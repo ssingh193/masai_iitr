@@ -1,0 +1,8 @@
+metric,value
+train_rows,840
+val_rows,180
+test_rows,180
+train_scaled_max_abs_mean_column,is_cod
+train_scaled_max_abs_mean,0.9778
+test_scaled_max_abs_mean_column,is_cod
+test_scaled_max_abs_mean,0.9394

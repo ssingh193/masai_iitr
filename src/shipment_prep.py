@@ -23,6 +23,8 @@ def print_stats(df):
     print("Total Records: ", len(df))
     print("Null Records: ", df.isnull().sum().sum())
     print("Duplicate records: ", df.duplicated().sum())
+    print("Size: ", df.size)
+    print("Shape: ", df.shape)
     print("*********[Describe]****************")
     print(df.describe())
     print("*************[Head]****************")
@@ -91,7 +93,8 @@ def clean_shipments(raw, medians=None):
     clean_df["parcel_weight_kg"] = clean_df["parcel_weight_kg"].fillna(parcel_weight_kg_median)
     clean_df["declared_value_inr"] = clean_df["declared_value_inr"].fillna(declared_value_inr_median)
     #print_stats(clean_df)
-    return {"median_values": median_values, "clean_df": clean_df}
+    #return {"median_values": median_values, "clean_df": clean_df}
+    return (clean_df, median_values)
 
 
 def build_features(clean, hubs):
