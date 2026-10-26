@@ -1,6 +1,7 @@
 ###########################################################
 Part A — Data Foundation and Delay Evidence
 ###########################################################
+----------------
 "Data findings"
 ----------------
 (i) which service type is delayed most often and at what rate
@@ -28,4 +29,40 @@ log_declared_value_median,7.0224
 
 ###########################################################
 Part B — Delivery-Hours Regression
+###########################################################
+-----------------------------
+"Model results (regression)"
+-----------------------------
+1. baseline R² = -0.0212
+2. Which model won on validation and its RMSE in hours? 
+   LinearRegression with RMSE value as 4.8912
+
+3. Which depths are high-bias and which are high-variance (use the gap between train_rmse and val_rmse)?
+   depth 1 is high-bias with train_rmse=11.6334 and val_rmse=12.1324 both on the higher side showing no generalization at all (underfitting).
+   depth unlimited (max_depth=None) has high variance with 0.0 as train_rmse while 7.7871 as val_rmse (overfitting).
+
+4. Which learning rate was best and why the other two fail (too slow versus overshooting)?
+   0.1 learning rate was best with lowest val_rmse of 4.9162
+   0.01 learning rate had the val_rmse of 10.0018 showing it was too slow
+   1.0 learning rate has the val_rmse of 7.2823 showing it overshoot the best learning rate value.
+
+5. If the cross-validation ranking disagrees with the validation ranking, which model you would ship and why.
+   Yes, cross-validation when run on the top two models with validation data set shows thedifferent results where 
+   LinearRegression model gave lower mean_r2 value than the GradientBoostingRegressor model.
+   Below are the CV results on validation data set for the top two models.
+   ------------------------------------------------------------
+   model,               mean_r2,    std_r2
+   linear_regression,   0.9261,     0.0048
+   gradient_boosting,   0.9352,     0.0045
+   ------------------------------------------------------------
+   But i would still consider the winner as LinearRegression model as its performance on test data set is better than GradientBoostingRegressor. So final winner is LinearRegression model.
+   ############################################################
+   #Final Model result on Test dataset
+   #model,             split, MAE,     MSE,     RMSE,    R2
+   #linear_regression, test,  3.5671,  20.4624, 4.5235,  0.9493
+   ############################################################
+
+
+###########################################################
+Part C — Delay Classifier and Alert Threshold
 ###########################################################

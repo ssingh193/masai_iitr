@@ -100,7 +100,8 @@ def clean_shipments(raw, medians=None):
 def build_features(clean, hubs):
     print("*********[build_features]****************")
     # It returns a DataFrame with the hub columns attached by a left merge on hub_id
-    clean = pd.merge(clean, hubs, on="hub_id", how="left")
+    # (hub_city, region, hub_tier, hub_daily_capacity)
+    clean = pd.merge(clean, hubs, on="hub_id", how="left", validate="many_to_one")
     #new columns: promised_hours (from PROMISED_HOURS, integer)
     clean["promised_hours"] = np.where(
         clean["service_type"] == "Express", PROMISED_HOURS.get("Express"),

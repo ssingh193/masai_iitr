@@ -228,9 +228,11 @@ print("outputs/part_b_gb_learning_rate.csv generated successfully...")
 # (already fitted on the training rows) and add the row model = <its name>, split = test to part_b_metrics.csv
 
 # Ranking based on rmse_val score the top two models are as given below
-#model,             split,  MAE,    MSE,    RMSE,   R2
-#linear_regression, val,    3.9222, 23.9235,4.8912, 0.9313
-#gradient_boosting, val,    3.9152, 24.1686,4.9162, 0.9306
+#model,             split,  MAE,    MSE,        RMSE,   R2
+#linear_regression, val,    3.9222, 23.9235,    4.8912, 0.9313
+#gradient_boosting, val,    3.9152, 24.1686,    4.9162, 0.9306
+#random_forest,     val,    4.2511, 29.7847,    5.4575, 0.9144
+#decision_tree,     val,    5.0971, 39.4338,    6.2796, 0.8867
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 #1,020 training-plus-validation rows
 X_train_val = np.concat((X_train_scaled, X_val_scaled))
@@ -267,14 +269,19 @@ print("outputs/part_b_cv.csv generated successfully...")
 
 # The final model is the candidate with the lowest validation RMSE; score it once on the test rows 
 # (already fitted on the training rows) and add the row model = <its name>, split = test to part_b_metrics.csv
-#Top Model: LinearRegression on test dataset
+#Final Model: LinearRegression on test dataset
 y_pred_test = pipeline_lr.predict(X_test_scaled)
 result_df = get_metrics("linear_regression", "test", y_test, y_pred_test)
 conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
 #Second Model: Gradient boosting on test dataset
-y_pred_test = model_gbr.predict(X_test_scaled)
-result_df = get_metrics("gradient_boosting", "test", y_test, y_pred_test)
-conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
+#y_pred_test = model_gbr.predict(X_test_scaled)
+#result_df = get_metrics("gradient_boosting", "test", y_test, y_pred_test)
+#conslidated_df = pd.concat([conslidated_df, result_df], ignore_index=True)
 #print(conslidated_df)
 conslidated_df.to_csv("outputs/part_b_metrics.csv", index=False)
 print("outputs/part_b_metrics.csv generated successfully...")
+############################################################
+#Final Model result on Test dataset
+#model,             split, MAE,     MSE,     RMSE,    R2
+#linear_regression, test,  3.5671,  20.4624, 4.5235,  0.9493
+############################################################
