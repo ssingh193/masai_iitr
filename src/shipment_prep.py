@@ -87,6 +87,7 @@ def clean_shipments(raw, medians=None):
     if(declared_value_inr_median == np.nan or declared_value_inr_median == None):
                     declared_value_inr_median = medians.get("declared_value_inr", np.nan).round(4)
 
+    #distance_km_median,parcel_weight_kg_median,declared_value_inr_median
     median_values = {"distance_km": distance_km_median, "parcel_weight_kg": parcel_weight_kg_median, "declared_value_inr": declared_value_inr_median}
     print(median_values)
     clean_df["distance_km"] = clean_df["distance_km"].fillna(distance_km_median)
