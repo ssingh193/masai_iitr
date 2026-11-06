@@ -111,6 +111,122 @@ Part C — Delay Classifier and Alert Threshold
    val      0.4,        125,  13,   6,    36,   0.8944,     0.7347,     0.8571,  0.7912
    
 
-###########################################################
+########################################################
 Part D — Hub Segments, Packaging and Operations Playbook
-###########################################################
+########################################################
+-------------------------------------------
+"How to run", "Operations recommendation", 
+"Production plan" and "Limitations"
+-------------------------------------------
+
+1. How to run: 
+   Step 1: Pre-requisites: 
+           a. Ensure python is installed on your machine. 
+           b. Setup a IDE of your choice (Recommended VSC)
+           c. Optional: Install github plugin on your IDE
+           d. Setup a workspace for the given project in your IDE
+   Step 2: Clone the github repository 
+           a. Use the plugin installed on your IDE for github to download the source code in your workspace.
+
+   Step 3: Check for compatibility
+           a. Run `pip freeze` command to check python packages and dependencies against the requirements.txt file provided in the main directory
+           b. Execute `pip install -r requirements.txt` to automates the entire installation process.
+
+   Step 4: Regenerate the model
+           a. Run `python package_model.py` to regenrate the `models/delay_model.pkl`
+           b. This is required to regenrate the delay model effectively after the required packages are installed.
+
+   Step 5: Predict actions
+           a. Run `python predict_delay.ph` to analyze and predict actions for new shipments.
+           b. Review proposed actions for the operations manager in output/new_shipment_actions.csv
+
+2. Operations recommendation for the regional head
+
+   a. Hubs in the Escalate segment with their delay rate: 
+      Below table shows the hubs which are categorized as escalate due to delays in parcel delivery with delay rate above 0.4.
+
+      hub_id  delay_rate   segment     hub_city
+      HUB13        0.46  Escalate       Nagpur
+      HUB15        0.36  Escalate        Kochi
+      HUB17        0.46  Escalate        Patna
+      HUB18        0.38  Escalate       Ranchi
+      HUB19        0.62  Escalate     Guwahati
+      HUB20        0.48  Escalate       Raipur
+      HUB21        0.40  Escalate  Bhubaneswar
+      HUB23        0.44  Escalate     Siliguri
+      HUB24        0.54  Escalate     Agartala
+
+   b. Every hub in tier_vs_segment_mismatch.csv and what that means for how its tier label should be used?
+      Every hub in the below table are matched with incorrect tier based on their segments.
+      hub tier should be mapped as per segments as following: 
+      Tier 1 → Standard, Tier 2 → Watch, Tier 3 → Escalate
+
+      hub_id,  segment,    hub_city,   hub_tier
+      HUB07,   Watch,      Kolkata,    1
+      HUB13,   Escalate,   Nagpur,     2
+      HUB15,   Escalate,   Kochi,      2
+      HUB22,   Watch,      Dehradun,   3
+
+   c. the alert threshold
+      Parcel are flagged for managere alerts based on the threshold set in models\delay_threshold.csv
+      Current model gives action alerts based on threshold value as 0.4
+
+   d. From part_c_final_test.csv — how many of every 10 flagged parcels are really delayed (precision) and how many of every 10 delayed parcels are caught (recall)?
+
+      For every 10 parcels: Roughly 7 parcels are delayed (0.66 precision) while 8 delayed parcels are caught (0.80 recall) 
+
+      threshold,  TN,   FP,   FN,   TP,   accuracy,   precision,  recall,  f1
+      0.4,        122,  17,   8,    33,   0.8611,     0.66,       0.8049,  0.7253
+
+   e. How many of the 48 new parcels were flagged and how many of those need a hub-manager escalation?
+
+      How many of the 48 new parcels were flagged:  12
+      How many of those need a hub-manager escalation:  10
+
+   f. One or two sentences explaining why you kept K = 3 for the segments, citing your part_d_separation.csv
+
+      Based on the data from part_d_separation.csv, K = 3 is the optimal choice because it delivers the steepest jump in the across-over-within cluster ratio (nearly doubling from 2.89 to 5.39), while maintaining exceptionally well-balanced and highly operational segment sizes (9, 8, and 7). Moving to (K = 4) or (K = 5) yields diminishing statistical returns and fragments the data into tiny, impractical clusters of 2 or 3 items.
+
+      K,    across_over_within,  cluster_sizes
+      2,    2.894,               15-9
+      3,    5.3928,              9-8-7
+      4,    6.3047,              8-7-5-4
+      5,    6.8866,              8-7-4-3-2
+
+3. Production plan
+   (a) map at least five of these seven production-readiness characteristics to a concrete item in your repository — accuracy, reliability, reproducibility, performance (speed), maintainability, consistency (same preprocessing in training and prediction), monitorability?
+   
+   1. Accuracy - Test accuracy for the delay model is 0.8611 which is good given recall of 0.8049 and 0.7253 f1 score.
+   2. Reliability - Model is well reliable as it performs consitantly and does not fail.
+   3. Reproducibility - Model is reproducible which means for the similar type of test data the results are consistant and/or similar.
+   4. Pereformance - Executing the model on given test data performs really well.
+   5. Consistancy - Model uses the same preprocessing steps for training and prediction with same random state hence the results are consistant.
+
+   (b) name at least three quantities to monitor with a numeric trigger for each (for example the weekly delayed share of delivered parcels, the weekly share of parcels flagged, and recall measured on parcels whose outcome is now known)?
+
+   1. Every week track the percentage of parcels flagged for delays.
+   2. Every week track the percentage of parcels flagged for escalation to hub manager.
+   3. Every week track the hub with highest parcels flagged for delays.   
+
+   (c) give a retraining schedule and say how the 15–28 September sale window (sale_event_flag) should be handled — compare against the same kind of event, not against ordinary weeks — and what data drift would look like here?
+
+   When retraining a model that incorporates a massive peak event like the September sale window, treating it as standard data will degrade model's accuracy.
+   1. Handling the Sale Window in Retraining
+   A massive sales event triggers structural shifts in logistics (e.g., massive volume spikes, courier capacity limits etc) that render standard baseline comparisons non-effective.
+
+   Segment and Compare Apple-to-Apple: 
+   Recommendation would be to not train or evaluate the model's performance during the September 15–28 window against ordinary weeks. Instead, benchmark the sale window against previous major sale events (e.g., Prime Day, Black Friday, or the last years September sale window).
+
+   Dual-Model Strategy or Flagging:
+	Option A (Contextual Flag): Keep the sale_event_flag == 1 in training data, but ensure the model has historical data from multiple past sale events so it can learn the non-linear relationship between high volume and delays.
+	Option B (Dedicated Model): Run a dedicated "Peak Season" model routing mechanism. When sale_event_flag == 1, route traffic to a model trained exclusively on peak historical data.
+
+   What Data Drift Looks Like Here??
+   1. Volume Spikes per Hub: Some of the regional hub would suddenly receives (5 times) its normal weekly volume.
+   2. Proportion of Flagged Segments: The ratio of high-priority express parcels to standard would increase significantly.
+
+
+4. Limitations
+   a. Synthetic data - The model is completely trained and validated on synthetic data and hence the real life example may result in lower accuracy and precision of the model.
+   b. Smaller data set - The model is trained on a small data set of 1200 records and tested on 48 test records with just 12 parcels flagged as delayed.
+   c. Threshold value tunning is performed on one single validation split of the dataset.
